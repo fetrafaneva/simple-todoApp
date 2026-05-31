@@ -7,7 +7,27 @@ type Todo = {
 };
 
 function App() {
-  return <div className="bg-red-500"> test </div>;
+  return (
+    <div className="flex justify-center">
+      <div className="w-2/3 flex-col gap-4 my-15 bg-base-300 p-5 rounded-2xl">
+        <div className="flex gap-4">
+          <input
+            type="text"
+            className="input w-full"
+            placeholder="Ajouter une tâche..."
+          />
+
+          <select name="" id="" className="select w-full">
+            <option value="Urgente">Urgente</option>
+            <option value="Moyenne">Moyenne</option>
+            <option value="Basse">Basse</option>
+          </select>
+
+          <button className="btn btn-primary">Ajouter</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default App;
