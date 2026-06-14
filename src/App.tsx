@@ -59,6 +59,18 @@ function App() {
     setTodos(newTodos);
   }
 
+  const [selecedTodos, setSelecedTodos] = useState<Set<number>>(new Set());
+
+  function toggleSelectedTodo(id: number) {
+    const newSelected = new Set(selecedTodos);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelecedTodos(newSelected);
+  }
+
   return (
     <div className="flex justify-center">
       <div className="w-2/3 flex-col gap-4 my-15 bg-base-300 p-5 rounded-2xl">
@@ -130,7 +142,12 @@ function App() {
             <ul className="divide-y divide-primary/20">
               {filteredTodos.map((todo) => (
                 <li key={todo.id}>
-                  <TodoItem todo={todo} onDelete={() => deleteTodo(todo.id)} />
+                  <TodoItem
+                    todo={todo}
+                    isSelected={selecedTodos.has(todo.id)}
+                    onDelete={() => deleteTodo(todo.id)}
+                    onToggleSelect={toggleSelectedTodo}
+                  />
                 </li>
               ))}
             </ul>
