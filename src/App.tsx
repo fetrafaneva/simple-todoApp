@@ -4,10 +4,17 @@ import { Construction } from "lucide-react";
 
 type Priority = "Urgente" | "Moyenne" | "Basse";
 
-type Todo = {
+export type Todo = {
   id: number;
   text: string;
   priority: Priority;
+  completed: boolean;
+};
+
+const PRIORITY_ORDER: Record<Priority, number> = {
+  Urgente: 0,
+  Moyenne: 1,
+  Basse: 2,
 };
 
 function App() {
@@ -15,7 +22,7 @@ function App() {
   const [priority, setPriority] = useState<Priority>("Moyenne");
 
   const savedTodos = localStorage.getItem("todos");
-  const initialTodos = savedTodos ? JSON.parse(savedTodos) : [];
+  const initialTodos: Todo[] = savedTodos ? JSON.parse(savedTodos) : [];
   const [todos, setTodos] = useState<Todo[]>(initialTodos);
   const [filter, setFilter] = useState<Priority | "Tous">("Tous");
 
@@ -24,164 +31,149 @@ function App() {
   }, [todos]);
 
   function addTodo() {
-    if (input.trim() == "") {
-      return;
-    }
+    if (input.trim() === "") return;
 
     const newTodo: Todo = {
       id: Date.now(),
       text: input.trim(),
-      priority: priority,
+      priority,
+      completed: false,
     };
 
-    const newTodos = [newTodo, ...todos];
-    setTodos(newTodos);
+    setTodos((prev) =>
+      [newTodo, ...prev].sort(
+        (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
+      )
+    );
     setInput("");
     setPriority("Moyenne");
-    console.log(todos);
   }
 
-  let filteredTodos: Todo[] = [];
-
-  if (filter === "Tous") {
-    filteredTodos = todos;
-  } else {
-    filteredTodos = todos.filter((todo) => todo.priority === filter);
+  function deleteTodo(id: number) {
+    setTodos((prev) => prev.filter((t) => t.id !== id));
   }
+
+  function toggleCompleted(id: number) {
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    );
+  }
+
+  function deleteCompleted() {
+    setTodos((prev) => prev.filter((t) => !t.completed));
+  }
+
+  const filteredTodos =
+    filter === "Tous" ? todos : todos.filter((t) => t.priority === filter);
 
   const urgentCount = todos.filter((t) => t.priority === "Urgente").length;
   const mediumCount = todos.filter((t) => t.priority === "Moyenne").length;
   const lowCount = todos.filter((t) => t.priority === "Basse").length;
-  const totalCount = todos.length;
+  const completedCount = todos.filter((t) => t.completed).length;
 
-  function deleteTodo(id: number) {
-    const newTodos = todos.filter((todo) => todo.id !== id);
-    setTodos(newTodos);
-  }
+  const stats = [
+    { label: "Total", value: todos.length, color: "" },
+    { label: "Urgentes", value: urgentCount, color: "text-error" },
+    { label: "Moyennes", value: mediumCount, color: "text-warning" },
+    { label: "Terminées", value: completedCount, color: "text-success" },
+  ];
 
-  const [selecedTodos, setSelecedTodos] = useState<Set<number>>(new Set());
-
-  function toggleSelectedTodo(id: number) {
-    const newSelected = new Set(selecedTodos);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelecedTodos(newSelected);
-  }
-
-  function finishSelected() {
-    const newTodos = todos.filter((todo) => {
-      if (selecedTodos.has(todo.id)) {
-        return false;
-      } else {
-        return true;
-      }
-    });
-
-    setTodos(newTodos);
-    setSelecedTodos(new Set());
-  }
+  const filters: (Priority | "Tous")[] = [
+    "Tous",
+    "Urgente",
+    "Moyenne",
+    "Basse",
+  ];
+  const filterCounts: Record<Priority | "Tous", number> = {
+    Tous: todos.length,
+    Urgente: urgentCount,
+    Moyenne: mediumCount,
+    Basse: lowCount,
+  };
 
   return (
-    <div className="flex justify-center">
-      <div className="w-2/3 flex flex-col gap-4 my-15 bg-base-300 p-5 rounded-2xl">
-        <div className="flex gap-4">
+    <div className="flex justify-center px-4">
+      <div className="w-full max-w-2xl flex flex-col gap-5 my-12 bg-base-300 p-6 rounded-2xl">
+        {/* Stat cards */}
+        <div className="grid grid-cols-4 gap-3">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="bg-base-100 rounded-xl p-3 text-center flex flex-col items-center gap-1"
+            >
+              <span className={`text-2xl font-black ${s.color}`}>
+                {s.value}
+              </span>
+              <span className="text-xs text-base-content/50">{s.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Input row */}
+        <div className="flex gap-3">
           <input
             type="text"
             className="input w-full"
-            placeholder="Ajouter une tâche..."
+            placeholder="Nouvelle tâche..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addTodo()}
           />
-
           <select
-            name=""
-            id=""
-            className="select w-full"
+            className="select"
             value={priority}
             onChange={(e) => setPriority(e.target.value as Priority)}
           >
-            <option value="Urgente">Urgente</option>
-            <option value="Moyenne">Moyenne</option>
-            <option value="Basse">Basse</option>
+            <option value="Urgente">🔴 Urgente</option>
+            <option value="Moyenne">🟡 Moyenne</option>
+            <option value="Basse">🟢 Basse</option>
           </select>
-
           <button onClick={addTodo} className="btn btn-primary">
             Ajouter
           </button>
         </div>
-        <div className="space-y-2 flex-1 h-fit">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-wrap gap-4">
-              <button
-                className={` btn btn-soft ${
-                  filter === "Tous" ? "btn-primary" : ""
-                }`}
-                onClick={() => setFilter("Tous")}
-              >
-                Tous({totalCount})
-              </button>
 
+        {/* Filters + delete completed */}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
+            {filters.map((f) => (
               <button
-                className={` btn btn-soft ${
-                  filter === "Urgente" ? "btn-primary" : ""
+                key={f}
+                className={`btn btn-sm btn-soft ${
+                  filter === f ? "btn-primary" : ""
                 }`}
-                onClick={() => setFilter("Urgente")}
+                onClick={() => setFilter(f)}
               >
-                Urgente({urgentCount})
+                {f} ({filterCounts[f]})
               </button>
-
-              <button
-                className={` btn btn-soft ${
-                  filter === "Moyenne" ? "btn-primary" : ""
-                }`}
-                onClick={() => setFilter("Moyenne")}
-              >
-                Moyenne({mediumCount})
-              </button>
-
-              <button
-                className={` btn btn-soft ${
-                  filter === "Basse" ? "btn-primary" : ""
-                }`}
-                onClick={() => setFilter("Basse")}
-              >
-                Basse({lowCount})
-              </button>
-            </div>
-            <button
-              onClick={finishSelected}
-              className=" btn btn-primary"
-              disabled={selecedTodos.size == 0}
-            >
-              Finir la selection ({selecedTodos.size})
-            </button>
+            ))}
           </div>
+          <button
+            onClick={deleteCompleted}
+            className="btn btn-sm btn-error btn-soft"
+            disabled={completedCount === 0}
+          >
+            Supprimer les terminées ({completedCount})
+          </button>
+        </div>
 
+        {/* Todo list */}
+        <div className="space-y-1">
           {filteredTodos.length > 0 ? (
-            <ul className="divide-y divide-primary/20">
+            <ul className="flex flex-col gap-1">
               {filteredTodos.map((todo) => (
-                <li key={todo.id}>
-                  <TodoItem
-                    todo={todo}
-                    isSelected={selecedTodos.has(todo.id)}
-                    onDelete={() => deleteTodo(todo.id)}
-                    onToggleSelect={toggleSelectedTodo}
-                  />
-                </li>
+                <TodoItem
+                  key={todo.id}
+                  todo={todo}
+                  onDelete={() => deleteTodo(todo.id)}
+                  onToggleCompleted={() => toggleCompleted(todo.id)}
+                />
               ))}
             </ul>
           ) : (
-            <div className="flex justify-center items-center flex-col p-5">
-              <div className="">
-                <Construction
-                  strokeWidth={1}
-                  className=" w-40 h-40 text-primary"
-                />
-                <p className=" text-sm">Aucune tâche pour ce filtre</p>
-              </div>
+            <div className="flex justify-center items-center flex-col py-12 gap-2 text-base-content/30">
+              <Construction strokeWidth={1} className="w-16 h-16" />
+              <p className="text-sm">Aucune tâche pour ce filtre</p>
             </div>
           )}
         </div>
