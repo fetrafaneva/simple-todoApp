@@ -63,6 +63,12 @@ function App() {
     setTodos((prev) => prev.filter((t) => !t.completed));
   }
 
+  function editTodo(id: number, newText: string) {
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, text: newText } : t))
+    );
+  }
+
   const filteredTodos =
     filter === "Tous" ? todos : todos.filter((t) => t.priority === filter);
 
@@ -167,6 +173,7 @@ function App() {
                   todo={todo}
                   onDelete={() => deleteTodo(todo.id)}
                   onToggleCompleted={() => toggleCompleted(todo.id)}
+                  onEdit={editTodo}
                 />
               ))}
             </ul>
