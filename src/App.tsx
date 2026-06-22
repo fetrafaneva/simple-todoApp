@@ -101,35 +101,58 @@ function App() {
         position: "relative",
       }}
     >
+      <style>{`
+        @media (max-width: 640px) {
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .input-row { flex-direction: column !important; }
+          .input-row input { font-size: 1rem !important; padding: 12px 14px !important; }
+          .input-row select { font-size: 0.9rem !important; padding: 11px 10px !important; }
+          .input-row button { width: 100% !important; justify-content: center !important; padding: 12px 16px !important; font-size: 0.95rem !important; }
+          .filter-bar { flex-direction: column !important; align-items: flex-start !important; }
+          .filter-btns { flex-wrap: wrap !important; }
+          .delete-btn { width: 100% !important; justify-content: center !important; }
+          .app-header h1 { font-size: 1.6rem !important; }
+          .app-padding { padding: 20px 16px 100px !important; }
+          .stat-value { font-size: 1.8rem !important; }
+        }
+      `}</style>
+
       <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet"
       />
 
-      {/* Animated background */}
       <FloatingOrbs />
 
-      {/* Main content */}
       <div
-        className="flex justify-center px-4 py-12"
+        className="app-padding flex justify-center px-4 py-12"
         style={{ position: "relative", zIndex: 1 }}
       >
         <div className="w-full max-w-2xl flex flex-col gap-6">
           {/* Header */}
-          <div className="flex items-center gap-3">
+          <div className="app-header flex items-center gap-3">
             <div
-              style={{ background: "#0D9488" }}
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{
+                background: "#0D9488",
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
             >
-              <CheckSquare className="w-5 h-5 text-white" />
+              <CheckSquare style={{ width: 22, height: 22, color: "#fff" }} />
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <h1
                 style={{
                   color: "#134E4A",
                   fontWeight: 800,
                   fontSize: "1.4rem",
                   lineHeight: 1.2,
+                  margin: 0,
                 }}
               >
                 Mes Tâches
@@ -139,6 +162,7 @@ function App() {
                   color: "#5EAFA8",
                   fontSize: "0.8rem",
                   fontWeight: 500,
+                  margin: 0,
                 }}
               >
                 {completedCount} sur {todos.length} terminées
@@ -150,8 +174,12 @@ function App() {
           {todos.length > 0 && (
             <div>
               <div
-                style={{ background: "#CCFBF1", borderRadius: 999, height: 6 }}
-                className="w-full overflow-hidden"
+                style={{
+                  background: "#CCFBF1",
+                  borderRadius: 999,
+                  height: 7,
+                  overflow: "hidden",
+                }}
               >
                 <div
                   style={{
@@ -176,33 +204,20 @@ function App() {
             </div>
           )}
 
-          {/* Stat cards */}
-          <div className="grid grid-cols-4 gap-3">
+          {/* Stat cards — 4 cols desktop, 2x2 mobile */}
+          <div
+            className="stats-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: 10,
+            }}
+          >
             {[
-              {
-                label: "Total",
-                value: todos.length,
-                accent: "#0D9488",
-                bg: "#CCFBF1",
-              },
-              {
-                label: "Urgentes",
-                value: urgentCount,
-                accent: "#EF4444",
-                bg: "#FEE2E2",
-              },
-              {
-                label: "Moyennes",
-                value: mediumCount,
-                accent: "#F59E0B",
-                bg: "#FEF3C7",
-              },
-              {
-                label: "Terminées",
-                value: completedCount,
-                accent: "#10B981",
-                bg: "#D1FAE5",
-              },
+              { label: "Total", value: todos.length, accent: "#0D9488" },
+              { label: "Urgentes", value: urgentCount, accent: "#EF4444" },
+              { label: "Moyennes", value: mediumCount, accent: "#F59E0B" },
+              { label: "Terminées", value: completedCount, accent: "#10B981" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -210,10 +225,16 @@ function App() {
                   background: "#fff",
                   border: "1.5px solid #E4FAF8",
                   borderRadius: 14,
+                  padding: "12px 8px",
+                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 4,
                 }}
-                className="p-3 text-center flex flex-col items-center gap-1"
               >
                 <span
+                  className="stat-value"
                   style={{
                     color: s.accent,
                     fontWeight: 800,
@@ -236,14 +257,17 @@ function App() {
             ))}
           </div>
 
-          {/* Input row */}
+          {/* Input row — horizontal desktop, vertical mobile */}
           <div
+            className="input-row"
             style={{
               background: "#fff",
               border: "1.5px solid #E4FAF8",
               borderRadius: 16,
+              display: "flex",
+              gap: 10,
+              padding: 12,
             }}
-            className="flex gap-3 p-3"
           >
             <input
               type="text"
@@ -251,13 +275,14 @@ function App() {
                 flex: 1,
                 border: "1.5px solid #CCFBF1",
                 borderRadius: 10,
-                padding: "8px 14px",
+                padding: "10px 14px",
                 fontSize: "0.9rem",
                 color: "#134E4A",
                 fontFamily: "inherit",
                 outline: "none",
                 background: "#F0FDFA",
                 fontWeight: 500,
+                minWidth: 0,
               }}
               placeholder="Nouvelle tâche..."
               value={input}
@@ -268,7 +293,7 @@ function App() {
               style={{
                 border: "1.5px solid #CCFBF1",
                 borderRadius: 10,
-                padding: "8px 10px",
+                padding: "10px 8px",
                 fontSize: "0.82rem",
                 color: "#134E4A",
                 fontFamily: "inherit",
@@ -276,13 +301,14 @@ function App() {
                 fontWeight: 600,
                 cursor: "pointer",
                 outline: "none",
+                flexShrink: 0,
               }}
               value={priority}
               onChange={(e) => setPriority(e.target.value as Priority)}
             >
-              <option value="Urgente">Urgente</option>
-              <option value="Moyenne">Moyenne</option>
-              <option value="Basse">Basse</option>
+              <option value="Urgente">🔴 Urgente</option>
+              <option value="Moyenne">🟡 Moyenne</option>
+              <option value="Basse">🟢 Basse</option>
             </select>
             <button
               onClick={addTodo}
@@ -291,16 +317,18 @@ function App() {
                 color: "#fff",
                 border: "none",
                 borderRadius: 10,
-                padding: "8px 16px",
+                padding: "10px 18px",
                 fontFamily: "inherit",
                 fontWeight: 700,
-                fontSize: "0.85rem",
+                fontSize: "0.88rem",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "center",
                 gap: 6,
                 transition: "background 150ms ease",
                 flexShrink: 0,
+                minHeight: 44,
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.background = "#EA6C00")
@@ -309,17 +337,38 @@ function App() {
                 (e.currentTarget.style.background = "#F97316")
               }
             >
-              <Plus className="w-4 h-4" />
+              <Plus style={{ width: 16, height: 16 }} />
               Ajouter
             </button>
           </div>
 
           {/* Filters + delete completed */}
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div
+            className="filter-bar"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <div
+              className="filter-btns"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <SlidersHorizontal
-                className="w-4 h-4"
-                style={{ color: "#5EAFA8" }}
+                style={{
+                  width: 15,
+                  height: 15,
+                  color: "#5EAFA8",
+                  flexShrink: 0,
+                }}
               />
               {filters.map((f) => (
                 <button
@@ -333,12 +382,13 @@ function App() {
                         ? "1.5px solid #0D9488"
                         : "1.5px solid #CCFBF1",
                     borderRadius: 8,
-                    padding: "5px 12px",
+                    padding: "7px 14px",
                     fontFamily: "inherit",
                     fontWeight: 600,
-                    fontSize: "0.78rem",
+                    fontSize: "0.8rem",
                     cursor: "pointer",
                     transition: "all 150ms ease",
+                    minHeight: 36,
                   }}
                 >
                   {f} ({filterCounts[f]})
@@ -347,21 +397,23 @@ function App() {
             </div>
             {completedCount > 0 && (
               <button
+                className="delete-btn"
                 onClick={deleteCompleted}
                 style={{
                   background: "#FEE2E2",
                   color: "#EF4444",
                   border: "1.5px solid #FECACA",
                   borderRadius: 8,
-                  padding: "5px 12px",
+                  padding: "7px 14px",
                   fontFamily: "inherit",
                   fontWeight: 600,
-                  fontSize: "0.78rem",
+                  fontSize: "0.8rem",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: 5,
+                  gap: 6,
                   transition: "background 150ms ease",
+                  minHeight: 36,
                 }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.background = "#FECACA")
@@ -370,16 +422,25 @@ function App() {
                   (e.currentTarget.style.background = "#FEE2E2")
                 }
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 style={{ width: 13, height: 13 }} />
                 Supprimer terminées ({completedCount})
               </button>
             )}
           </div>
 
           {/* Todo list */}
-          <div>
+          <div style={{ paddingBottom: 16 }}>
             {filteredTodos.length > 0 ? (
-              <ul className="flex flex-col gap-2">
+              <ul
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  listStyle: "none",
+                  margin: 0,
+                  padding: 0,
+                }}
+              >
                 {filteredTodos.map((todo) => (
                   <TodoItem
                     key={todo.id}
@@ -401,14 +462,20 @@ function App() {
               >
                 <CheckSquare
                   strokeWidth={1.2}
-                  className="w-12 h-12 mx-auto mb-3"
-                  style={{ color: "#99E6DF" }}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    color: "#99E6DF",
+                    display: "block",
+                    margin: "0 auto 12px",
+                  }}
                 />
                 <p
                   style={{
                     color: "#5EAFA8",
                     fontSize: "0.88rem",
                     fontWeight: 600,
+                    margin: 0,
                   }}
                 >
                   Aucune tâche pour ce filtre
