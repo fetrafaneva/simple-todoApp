@@ -1,4 +1,4 @@
-import { Trash } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 import { useRef, useState } from "react";
 import type { Todo } from "../App";
 
@@ -9,22 +9,31 @@ type Props = {
   onEdit: (id: number, newText: string) => void;
 };
 
-const priorityBorder: Record<Todo["priority"], string> = {
-  Urgente: "border-l-4 border-l-error",
-  Moyenne: "border-l-4 border-l-warning",
-  Basse: "border-l-4 border-l-success",
-};
-
-const priorityBadge: Record<Todo["priority"], string> = {
-  Urgente: "badge-error",
-  Moyenne: "badge-warning",
-  Basse: "badge-success",
+const priorityConfig: Record<
+  Todo["priority"],
+  { accent: string; bg: string; label: string; dot: string }
+> = {
+  Urgente: {
+    accent: "#EF4444",
+    bg: "#FEE2E2",
+    label: "#EF4444",
+    dot: "#EF4444",
+  },
+  Moyenne: {
+    accent: "#F59E0B",
+    bg: "#FEF3C7",
+    label: "#D97706",
+    dot: "#F59E0B",
+  },
+  Basse: { accent: "#10B981", bg: "#D1FAE5", label: "#059669", dot: "#10B981" },
 };
 
 const TodoItem = ({ todo, onDelete, onToggleCompleted, onEdit }: Props) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(todo.text);
+  const [hovered, setHovered] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const cfg = priorityConfig[todo.priority];
 
   function startEdit() {
     if (todo.completed) return;
@@ -51,22 +60,62 @@ const TodoItem = ({ todo, onDelete, onToggleCompleted, onEdit }: Props) => {
 
   return (
     <li
-      className={`flex items-center gap-3 px-4 py-3 bg-base-100 rounded-xl transition-opacity ${
-        priorityBorder[todo.priority]
-      } ${todo.completed ? "opacity-50" : "opacity-100"}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: "#fff",
+        border: `1.5px solid ${
+          hovered && !todo.completed ? "#CCFBF1" : "#F0FDFA"
+        }`,
+        borderLeft: `3px solid ${cfg.accent}`,
+        borderRadius: 12,
+        padding: "10px 14px",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        opacity: todo.completed ? 0.55 : 1,
+        transition: "all 150ms ease",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+      }}
     >
-      <input
-        type="checkbox"
-        className="checkbox checkbox-primary checkbox-sm flex-shrink-0"
-        checked={todo.completed}
-        onChange={onToggleCompleted}
-      />
+      {/* Checkbox custom */}
+      <button
+        onClick={onToggleCompleted}
+        aria-label="Marquer comme terminée"
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: 6,
+          border: todo.completed
+            ? `2px solid ${cfg.accent}`
+            : "2px solid #CCFBF1",
+          background: todo.completed ? cfg.accent : "transparent",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          transition: "all 150ms ease",
+        }}
+      >
+        {todo.completed && (
+          <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+            <path
+              d="M1 4L4 7L10 1"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
+      </button>
 
+      {/* Text / Edit input */}
       {editing ? (
         <input
           ref={inputRef}
           type="text"
-          className="input input-sm flex-1"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commitEdit}
@@ -74,35 +123,112 @@ const TodoItem = ({ todo, onDelete, onToggleCompleted, onEdit }: Props) => {
             if (e.key === "Enter") commitEdit();
             if (e.key === "Escape") cancelEdit();
           }}
+          style={{
+            flex: 1,
+            border: "1.5px solid #0D9488",
+            borderRadius: 8,
+            padding: "4px 10px",
+            fontSize: "0.88rem",
+            fontFamily: "inherit",
+            color: "#134E4A",
+            fontWeight: 500,
+            outline: "none",
+            background: "#F0FDFA",
+          }}
         />
       ) : (
         <span
           onDoubleClick={startEdit}
           title={todo.completed ? "" : "Double-clic pour modifier"}
-          className={`flex-1 text-sm font-medium transition-all select-none ${
-            todo.completed
-              ? "line-through text-base-content/40"
-              : "cursor-text hover:text-primary"
-          }`}
+          style={{
+            flex: 1,
+            fontSize: "0.88rem",
+            fontWeight: 600,
+            color: todo.completed ? "#9CA3AF" : "#134E4A",
+            textDecoration: todo.completed ? "line-through" : "none",
+            cursor: todo.completed ? "default" : "text",
+            transition: "color 150ms ease",
+            userSelect: "none",
+            lineHeight: 1.5,
+          }}
         >
           {todo.text}
         </span>
       )}
 
+      {/* Priority badge */}
       <span
-        className={`badge badge-sm badge-soft flex-shrink-0 ${
-          priorityBadge[todo.priority]
-        }`}
+        style={{
+          background: cfg.bg,
+          color: cfg.label,
+          border: `1px solid ${cfg.accent}20`,
+          borderRadius: 6,
+          padding: "2px 8px",
+          fontSize: "0.7rem",
+          fontWeight: 700,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+        }}
       >
+        <span
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: cfg.dot,
+            display: "inline-block",
+            flexShrink: 0,
+          }}
+        />
         {todo.priority}
       </span>
 
+      {/* Edit button */}
+      {!todo.completed && (
+        <button
+          onClick={startEdit}
+          aria-label="Modifier la tâche"
+          style={{
+            background: hovered ? "#F0FDFA" : "transparent",
+            border: "1.5px solid",
+            borderColor: hovered ? "#CCFBF1" : "transparent",
+            borderRadius: 7,
+            padding: "4px 6px",
+            cursor: "pointer",
+            color: "#5EAFA8",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            transition: "all 150ms ease",
+          }}
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+      )}
+
+      {/* Delete button */}
       <button
         onClick={onDelete}
-        className="btn btn-xs btn-error btn-soft flex-shrink-0"
         aria-label="Supprimer la tâche"
+        style={{
+          background: hovered ? "#FEE2E2" : "transparent",
+          border: "1.5px solid",
+          borderColor: hovered ? "#FECACA" : "transparent",
+          borderRadius: 7,
+          padding: "4px 6px",
+          cursor: "pointer",
+          color: "#EF4444",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          transition: "all 150ms ease",
+        }}
       >
-        <Trash className="w-3 h-3" />
+        <Trash2 className="w-3.5 h-3.5" />
       </button>
     </li>
   );

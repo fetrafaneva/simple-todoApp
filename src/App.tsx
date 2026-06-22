@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import TodoItem from "./components/TodoItem";
-import { Construction } from "lucide-react";
+import { CheckSquare, Plus, Trash2, SlidersHorizontal } from "lucide-react";
 
 type Priority = "Urgente" | "Moyenne" | "Basse";
 
@@ -32,14 +32,12 @@ function App() {
 
   function addTodo() {
     if (input.trim() === "") return;
-
     const newTodo: Todo = {
       id: Date.now(),
       text: input.trim(),
       priority,
       completed: false,
     };
-
     setTodos((prev) =>
       [newTodo, ...prev].sort(
         (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
@@ -77,13 +75,6 @@ function App() {
   const lowCount = todos.filter((t) => t.priority === "Basse").length;
   const completedCount = todos.filter((t) => t.completed).length;
 
-  const stats = [
-    { label: "Total", value: todos.length, color: "" },
-    { label: "Urgentes", value: urgentCount, color: "text-error" },
-    { label: "Moyennes", value: mediumCount, color: "text-warning" },
-    { label: "Terminées", value: completedCount, color: "text-success" },
-  ];
-
   const filters: (Priority | "Tous")[] = [
     "Tous",
     "Urgente",
@@ -97,76 +88,281 @@ function App() {
     Basse: lowCount,
   };
 
+  const progress =
+    todos.length > 0 ? Math.round((completedCount / todos.length) * 100) : 0;
+
   return (
-    <div className="flex justify-center px-4">
-      <div className="w-full max-w-2xl flex flex-col gap-5 my-12 bg-base-300 p-6 rounded-2xl">
+    <div
+      style={{
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        background: "#F0FDFA",
+        minHeight: "100vh",
+      }}
+      className="flex justify-center px-4 py-12"
+    >
+      <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+      />
+
+      <div className="w-full max-w-2xl flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div
+            style={{ background: "#0D9488" }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          >
+            <CheckSquare className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1
+              style={{
+                color: "#134E4A",
+                fontWeight: 800,
+                fontSize: "1.4rem",
+                lineHeight: 1.2,
+              }}
+            >
+              Mes Tâches
+            </h1>
+            <p
+              style={{ color: "#5EAFA8", fontSize: "0.8rem", fontWeight: 500 }}
+            >
+              {completedCount} sur {todos.length} terminées
+            </p>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        {todos.length > 0 && (
+          <div>
+            <div
+              style={{ background: "#CCFBF1", borderRadius: 999, height: 6 }}
+              className="w-full overflow-hidden"
+            >
+              <div
+                style={{
+                  background: "#0D9488",
+                  width: `${progress}%`,
+                  height: "100%",
+                  borderRadius: 999,
+                  transition: "width 300ms ease",
+                }}
+              />
+            </div>
+            <p
+              style={{
+                color: "#5EAFA8",
+                fontSize: "0.72rem",
+                fontWeight: 600,
+                marginTop: 4,
+              }}
+            >
+              {progress}% accompli
+            </p>
+          </div>
+        )}
+
         {/* Stat cards */}
         <div className="grid grid-cols-4 gap-3">
-          {stats.map((s) => (
+          {[
+            {
+              label: "Total",
+              value: todos.length,
+              accent: "#0D9488",
+              bg: "#CCFBF1",
+            },
+            {
+              label: "Urgentes",
+              value: urgentCount,
+              accent: "#EF4444",
+              bg: "#FEE2E2",
+            },
+            {
+              label: "Moyennes",
+              value: mediumCount,
+              accent: "#F59E0B",
+              bg: "#FEF3C7",
+            },
+            {
+              label: "Terminées",
+              value: completedCount,
+              accent: "#10B981",
+              bg: "#D1FAE5",
+            },
+          ].map((s) => (
             <div
               key={s.label}
-              className="bg-base-100 rounded-xl p-3 text-center flex flex-col items-center gap-1"
+              style={{
+                background: "#fff",
+                border: "1.5px solid #E4FAF8",
+                borderRadius: 14,
+              }}
+              className="p-3 text-center flex flex-col items-center gap-1"
             >
-              <span className={`text-2xl font-black ${s.color}`}>
+              <span
+                style={{
+                  color: s.accent,
+                  fontWeight: 800,
+                  fontSize: "1.5rem",
+                  lineHeight: 1,
+                }}
+              >
                 {s.value}
               </span>
-              <span className="text-xs text-base-content/50">{s.label}</span>
+              <span
+                style={{
+                  color: "#5EAFA8",
+                  fontSize: "0.7rem",
+                  fontWeight: 600,
+                }}
+              >
+                {s.label}
+              </span>
             </div>
           ))}
         </div>
 
         {/* Input row */}
-        <div className="flex gap-3">
+        <div
+          style={{
+            background: "#fff",
+            border: "1.5px solid #E4FAF8",
+            borderRadius: 16,
+          }}
+          className="flex gap-3 p-3"
+        >
           <input
             type="text"
-            className="input w-full"
+            style={{
+              flex: 1,
+              border: "1.5px solid #CCFBF1",
+              borderRadius: 10,
+              padding: "8px 14px",
+              fontSize: "0.9rem",
+              color: "#134E4A",
+              fontFamily: "inherit",
+              outline: "none",
+              background: "#F0FDFA",
+              fontWeight: 500,
+            }}
             placeholder="Nouvelle tâche..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addTodo()}
           />
           <select
-            className="select"
+            style={{
+              border: "1.5px solid #CCFBF1",
+              borderRadius: 10,
+              padding: "8px 10px",
+              fontSize: "0.82rem",
+              color: "#134E4A",
+              fontFamily: "inherit",
+              background: "#F0FDFA",
+              fontWeight: 600,
+              cursor: "pointer",
+              outline: "none",
+            }}
             value={priority}
             onChange={(e) => setPriority(e.target.value as Priority)}
           >
-            <option value="Urgente">🔴 Urgente</option>
-            <option value="Moyenne">🟡 Moyenne</option>
-            <option value="Basse">🟢 Basse</option>
+            <option value="Urgente">Urgente</option>
+            <option value="Moyenne">Moyenne</option>
+            <option value="Basse">Basse</option>
           </select>
-          <button onClick={addTodo} className="btn btn-primary">
+          <button
+            onClick={addTodo}
+            style={{
+              background: "#F97316",
+              color: "#fff",
+              border: "none",
+              borderRadius: 10,
+              padding: "8px 16px",
+              fontFamily: "inherit",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              transition: "background 150ms ease",
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#EA6C00")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#F97316")}
+          >
+            <Plus className="w-4 h-4" />
             Ajouter
           </button>
         </div>
 
         {/* Filters + delete completed */}
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <SlidersHorizontal
+              className="w-4 h-4"
+              style={{ color: "#5EAFA8" }}
+            />
             {filters.map((f) => (
               <button
                 key={f}
-                className={`btn btn-sm btn-soft ${
-                  filter === f ? "btn-primary" : ""
-                }`}
                 onClick={() => setFilter(f)}
+                style={{
+                  background: filter === f ? "#0D9488" : "#fff",
+                  color: filter === f ? "#fff" : "#134E4A",
+                  border:
+                    filter === f
+                      ? "1.5px solid #0D9488"
+                      : "1.5px solid #CCFBF1",
+                  borderRadius: 8,
+                  padding: "5px 12px",
+                  fontFamily: "inherit",
+                  fontWeight: 600,
+                  fontSize: "0.78rem",
+                  cursor: "pointer",
+                  transition: "all 150ms ease",
+                }}
               >
                 {f} ({filterCounts[f]})
               </button>
             ))}
           </div>
-          <button
-            onClick={deleteCompleted}
-            className="btn btn-sm btn-error btn-soft"
-            disabled={completedCount === 0}
-          >
-            Supprimer les terminées ({completedCount})
-          </button>
+          {completedCount > 0 && (
+            <button
+              onClick={deleteCompleted}
+              style={{
+                background: "#FEE2E2",
+                color: "#EF4444",
+                border: "1.5px solid #FECACA",
+                borderRadius: 8,
+                padding: "5px 12px",
+                fontFamily: "inherit",
+                fontWeight: 600,
+                fontSize: "0.78rem",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                transition: "background 150ms ease",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "#FECACA")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "#FEE2E2")
+              }
+            >
+              <Trash2 className="w-3 h-3" />
+              Supprimer terminées ({completedCount})
+            </button>
+          )}
         </div>
 
         {/* Todo list */}
-        <div className="space-y-1">
+        <div>
           {filteredTodos.length > 0 ? (
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col gap-2">
               {filteredTodos.map((todo) => (
                 <TodoItem
                   key={todo.id}
@@ -178,9 +374,28 @@ function App() {
               ))}
             </ul>
           ) : (
-            <div className="flex justify-center items-center flex-col py-12 gap-2 text-base-content/30">
-              <Construction strokeWidth={1} className="w-16 h-16" />
-              <p className="text-sm">Aucune tâche pour ce filtre</p>
+            <div
+              style={{
+                border: "1.5px dashed #CCFBF1",
+                borderRadius: 16,
+                padding: "48px 24px",
+                textAlign: "center",
+              }}
+            >
+              <CheckSquare
+                strokeWidth={1.2}
+                className="w-12 h-12 mx-auto mb-3"
+                style={{ color: "#99E6DF" }}
+              />
+              <p
+                style={{
+                  color: "#5EAFA8",
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                }}
+              >
+                Aucune tâche pour ce filtre
+              </p>
             </div>
           )}
         </div>
